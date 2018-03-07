@@ -1,5 +1,7 @@
 package com.wavesplatform.wavesj;
 
+import com.Util;
+
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.KeccakDigest;
 
@@ -39,7 +41,12 @@ public class PublicKeyAccount implements Account {
 
     static byte[] secureHash(byte[] message, int ofs, int len) {
         byte[] blake2b = hash(message, ofs, len, Hash.BLAKE2B256);
-        return hash(blake2b, 0, blake2b.length, KECCAK256);
+        System.out.println("secureHash BLAKE2b len:" + blake2b.length);
+        Util.printUByteArray(blake2b);
+        byte[] keccak = hash(blake2b, 0, blake2b.length, KECCAK256);
+        System.out.println("secureHash keccak len:" + keccak.length + " digest: " + KECCAK256.getDigestSize());
+        Util.printUByteArray(keccak);
+        return keccak;
     }
 
     private static byte[] address(byte[] publicKey, char scheme) {

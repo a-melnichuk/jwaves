@@ -243,8 +243,16 @@ public class PrivateKeyAccount extends PublicKeyAccount {
 
     private static byte[] privateKey(String seed, int nonce) {
         // account seed from seed & nonce
+        System.out.println("Private key seed string:");
+        System.out.println(seed);
         ByteBuffer buf = ByteBuffer.allocate(seed.getBytes().length + 4);
+
         buf.putInt(nonce).put(seed.getBytes());
+
+        System.out.println("Private key seed bytes:");
+        Util.printUByteArray(buf.array());
+
+        System.out.println("PrivateKey secureHash len:" + buf.array().length);
         byte[] accountSeed = secureHash(buf.array(), 0, buf.array().length);
 
         // private key from account seed & scheme
@@ -254,7 +262,7 @@ public class PrivateKeyAccount extends PublicKeyAccount {
         privateKey[31] &= 127;
         privateKey[31] |= 64;
 
-        System.out.println("privateKey");
+        System.out.println("PrivateKey:");
         Util.printUByteArray(privateKey);
         return privateKey;
     }

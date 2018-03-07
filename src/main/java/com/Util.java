@@ -21,6 +21,22 @@ public class Util {
         return list;
     }
 
+    public static void printHexString(byte[] a) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : a) {
+            sb.append(String.format("%02X", b));
+        }
+        System.out.println(sb);
+    }
+
+    public static void printHexString(List<Integer> a) {
+        StringBuilder sb = new StringBuilder();
+        for (Integer i : a) {
+            sb.append(String.format("%02X", i));
+        }
+        System.out.println(sb);
+    }
+
     public static void printUByteArray(byte[] a) {
         System.out.println(listOfUByte(a));
     }

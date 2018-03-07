@@ -66,7 +66,7 @@ set CMD_LINE_ARGS=%*
 set CLASSPATH=%APP_HOME%\lib\gs-gradle-0.1.0.jar;%APP_HOME%\lib\joda-time-2.2.jar;%APP_HOME%\lib\wavesj-0.2.jar;%APP_HOME%\lib\curve25519-java-0.4.0.jar;%APP_HOME%\lib\bcprov-jdk15on-1.58.jar;%APP_HOME%\lib\httpclient-4.5.jar;%APP_HOME%\lib\jackson-databind-2.9.2.jar;%APP_HOME%\lib\httpcore-4.4.1.jar;%APP_HOME%\lib\commons-logging-1.2.jar;%APP_HOME%\lib\commons-codec-1.9.jar;%APP_HOME%\lib\jackson-annotations-2.9.0.jar;%APP_HOME%\lib\jackson-core-2.9.2.jar
 
 @rem Execute waves
-"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %WAVES_OPTS%  -classpath "%CLASSPATH%" hello.HelloWorld %CMD_LINE_ARGS%
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %WAVES_OPTS%  -classpath "%CLASSPATH%" com.Main %CMD_LINE_ARGS%
 
 :end
 @rem End local scope for the variables with windows NT shell
