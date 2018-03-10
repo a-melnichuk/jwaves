@@ -270,6 +270,8 @@ public class PrivateKeyAccount extends PublicKeyAccount {
     private static byte[] publicKey(byte[] privateKey) {
         byte[] publicKey = new byte[32];
         curve_sigs.curve25519_keygen(publicKey, privateKey);
+        System.out.println("Public Key:");
+        Util.printUByteArray(publicKey);
         return publicKey;
     }
 }

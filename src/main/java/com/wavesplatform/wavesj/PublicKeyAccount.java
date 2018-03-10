@@ -21,6 +21,7 @@ public class PublicKeyAccount implements Account {
         this.scheme = scheme;
         this.publicKey = publicKey;
         this.address = Base58.encode(address(publicKey, scheme));
+        System.out.println("address base58: " + address);
     }
 
     public PublicKeyAccount(String publicKey, char scheme) {
@@ -53,8 +54,14 @@ public class PublicKeyAccount implements Account {
         ByteBuffer buf = ByteBuffer.allocate(26);
         byte[] hash = secureHash(publicKey, 0, publicKey.length);
         buf.put((byte) 1).put((byte) scheme).put(hash, 0, 20);
+        System.out.println("address hash1 len:" + hash.length + " scheme:" + scheme + " buflen: " + buf);
+        Util.printUByteArray(buf.array());
         byte[] checksum = secureHash(buf.array(), 0, 22);
+        System.out.println("address checksum len:" + checksum.length);
+        Util.printUByteArray(checksum);
         buf.put(checksum, 0, 4);
+        System.out.println("address final len:" + buf.array().length);
+        Util.printUByteArray(buf.array());
         return buf.array();
     }
 }
