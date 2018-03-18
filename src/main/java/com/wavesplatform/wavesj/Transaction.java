@@ -164,7 +164,7 @@ public class Transaction {
         if (isWaves(assetId)) {
             throw new IllegalArgumentException("Cannot reissue WAVES");
         }
-        long timestamp = System.currentTimeMillis();
+        long timestamp = 1521393409455L;//System.currentTimeMillis();
         ByteBuffer buf = ByteBuffer.allocate(MIN_BUFFER_SIZE);
         buf.put(REISSUE).put(account.getPublicKey()).put(Base58.decode(assetId)).putLong(quantity)
                 .put((byte) (reissuable ? 1 : 0))
