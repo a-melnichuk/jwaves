@@ -21,20 +21,24 @@ public class Util {
         return list;
     }
 
+    public static byte[] arrayOfBytes(int[] a) {
+        byte[] ret = new byte[a.length];
+        for (int i = 0; i < a.length; ++i) {
+            ret[i] = (byte) a[i];
+        }
+        return ret;
+    }
+
     public static String hexString(byte[] a) {
         StringBuilder sb = new StringBuilder();
         for (byte b : a) {
             sb.append(String.format("%02X", b));
         }
-        return sb.toString();
+        return sb.toString().toLowerCase();
     }
 
     public static void printHexString(byte[] a) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : a) {
-            sb.append(String.format("%02X", b));
-        }
-        System.out.println(sb);
+        System.out.println(hexString(a));
     }
 
     public static void printHexString(List<Integer> a) {

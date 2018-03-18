@@ -81,14 +81,18 @@ public class Transaction {
             Field providerField = Curve25519.class.getDeclaredField("provider");
             providerField.setAccessible(true);
             OpportunisticCurve25519Provider provider = (OpportunisticCurve25519Provider) providerField.get(cipher);
-            byte[] random = provider.getRandom(64);
+            int[] randomIntArray = new int[] {64, 25, 196, 67, 26, 66, 35, 88, 53, 188, 8, 63, 113, 126, 31, 86, 171, 157, 191, 214, 52, 143, 63, 122, 165, 123, 194, 156, 225, 103, 87, 96, 79, 107, 185, 79, 45, 250, 141, 192, 120, 121, 20, 51, 47, 162, 221, 228, 84, 65, 72, 115, 183, 60, 13, 222, 232, 81, 254, 44, 109, 231, 121, 228};
+
+            byte[] random = Util.arrayOfBytes(randomIntArray); // provider.getRandom(64);
+            byte[] signature = provider.calculateSignature(random, account.getPrivateKey(), bytes);
             System.out.println(
                     "provider: " + provider + "\n" +
                     "calculateSignature:\n" +
                     "random: " + Util.listOfUByte(random) + "\n" +
                     "private key: " + Util.hexString(account.getPrivateKey()) + "\n" +
-                    "message: " + Util.hexString(bytes) + "\n");
-            provider.calculateSignature(random, account.getPrivateKey(), bytes);
+                    "message: " + Util.hexString(bytes) + "\n" +
+                    "signature: " + Util.hexString(signature) + "\n");
+
 
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
