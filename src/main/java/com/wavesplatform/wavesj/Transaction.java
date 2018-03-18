@@ -1,9 +1,12 @@
 package com.wavesplatform.wavesj;
 
+import com.Util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.whispersystems.curve25519.Curve25519;
+import org.whispersystems.curve25519.OpportunisticCurve25519Provider;
 
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,8 +33,14 @@ public class Transaction {
 
     private Transaction(PrivateKeyAccount account, ByteBuffer buffer, String endpoint, Object... items) {
         byte[] bytes = toBytes(buffer);
-        this.id = hash(bytes);
-        this.signature = sign(account, bytes);
+        this.id = hash(bytes); // base58_encode(blake2b256(bytes))
+        this.signature = sign(account, bytes); // base58_encode(sign())
+
+        System.out.println(
+                        "Tx constructor:\n" +
+                        "id: " + id + "\n" +
+                        "signature: " + signature + "\n");
+
         this.endpoint = endpoint;
 
         HashMap<String, Object> map = new HashMap<>();
@@ -68,6 +77,30 @@ public class Transaction {
     }
 
     private static String sign(PrivateKeyAccount account, byte[] bytes) {
+        try {
+            Field providerField = Curve25519.class.getDeclaredField("provider");
+            providerField.setAccessible(true);
+            OpportunisticCurve25519Provider provider = (OpportunisticCurve25519Provider) providerField.get(cipher);
+            byte[] random = provider.getRandom(64);
+            System.out.println(
+                    "provider: " + provider + "\n" +
+                    "calculateSignature:\n" +
+                    "random: " + Util.listOfUByte(random) + "\n" +
+                    "private key: " + Util.hexString(account.getPrivateKey()) + "\n" +
+                    "message: " + Util.hexString(bytes) + "\n");
+            provider.calculateSignature(random, account.getPrivateKey(), bytes);
+
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(
+                "Tx singing:\n" +
+                        "private key: " + Util.hexString(account.getPrivateKey()) + "\n" +
+                        "signature hex bytes: " + Util.hexString(bytes) + "\n");
+
         return Base58.encode(cipher.calculateSignature(account.getPrivateKey(), bytes));
     }
 
@@ -83,24 +116,36 @@ public class Transaction {
         }
     }
 
-    public static Transaction makeIssueTx(PrivateKeyAccount account,
-            String name, String description, long quantity, int decimals, boolean reissuable, long fee)
+    public static Transaction makeIssueTx(
+            PrivateKeyAccount account,
+            String name,
+            String description,
+            long quantity,
+            int decimals,
+            boolean reissuable,
+            long fee)
     {
         long timestamp = System.currentTimeMillis();
         int desclen = description == null ? 0 : description.length();
         ByteBuffer buf = ByteBuffer.allocate(MIN_BUFFER_SIZE + name.length() + desclen);
-        buf.put(ISSUE).put(account.getPublicKey())
-                .putShort((short) name.length()).put(name.getBytes())
+        buf
+                .put(ISSUE)
+                .put(account.getPublicKey())
+                .putShort((short) name.length())
+                .put(name.getBytes())
                 .putShort((short) desclen);
         if (desclen > 0) {
             buf.put(description.getBytes());
         }
-        buf.putLong(quantity)
+        buf
+                .putLong(quantity)
                 .put((byte) decimals)
                 .put((byte) (reissuable ? 1 : 0))
                 .putLong(fee).putLong(timestamp);
 
-       return new Transaction(account, buf,"/assets/broadcast/issue",
+       return new Transaction(account,
+               buf,
+               "/assets/broadcast/issue",
                 "senderPublicKey", Base58.encode(account.getPublicKey()),
                 "name", name,
                 "description", description,
@@ -129,23 +174,49 @@ public class Transaction {
                 "timestamp", timestamp);
     }
 
-    public static Transaction makeTransferTx(PrivateKeyAccount account, String toAddress,
-            long amount, String assetId, long fee, String feeAssetId, String attachment)
+    public static Transaction makeTransferTx(
+            PrivateKeyAccount account,
+            String toAddress,
+            long amount,
+            String assetId,
+            long fee,
+            String feeAssetId,
+            String attachment)
     {
         byte[] attachmentBytes = (attachment == null ? "" : attachment).getBytes();
-        int datalen = (isWaves(assetId) ? 0 : 32) +
+        int datalen =
+                (isWaves(assetId) ? 0 : 32) +
                 (isWaves(feeAssetId) ? 0 : 32) +
                 attachmentBytes.length + MIN_BUFFER_SIZE;
+
         long timestamp = System.currentTimeMillis();
 
         ByteBuffer buf = ByteBuffer.allocate(datalen);
-        buf.put(TRANSFER).put(account.getPublicKey());
+        buf
+                .put(TRANSFER)
+                .put(account.getPublicKey());
+
         putAsset(buf, assetId);
         putAsset(buf, feeAssetId);
-        buf.putLong(timestamp).putLong(amount).putLong(fee).put(Base58.decode(toAddress))
-                .putShort((short) attachmentBytes.length).put(attachmentBytes);
+        buf
+                .putLong(timestamp)
+                .putLong(amount)
+                .putLong(fee)
+                .put(Base58.decode(toAddress))
+                .putShort((short) attachmentBytes.length)
+                .put(attachmentBytes);
 
-        return new Transaction(account, buf,"/assets/broadcast/transfer",
+        System.out.println(
+                    "\n--------------------\n" +
+                    "Tx buffer:\n" +
+                    "timestamp: " + timestamp + "\n" +
+                    "senderPublicKey: " + Base58.encode(account.getPublicKey()) + "\n" +
+                    "buffer:");
+        Util.printHexString(buf.array());
+
+        return new Transaction(
+                account, buf,
+                "/assets/broadcast/transfer",
                 "senderPublicKey", Base58.encode(account.getPublicKey()),
                 "recipient", toAddress,
                 "amount", amount,

@@ -21,6 +21,14 @@ public class Util {
         return list;
     }
 
+    public static String hexString(byte[] a) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : a) {
+            sb.append(String.format("%02X", b));
+        }
+        return sb.toString();
+    }
+
     public static void printHexString(byte[] a) {
         StringBuilder sb = new StringBuilder();
         for (byte b : a) {
