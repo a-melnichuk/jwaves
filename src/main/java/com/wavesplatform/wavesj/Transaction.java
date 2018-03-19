@@ -34,7 +34,7 @@ public class Transaction {
     private Transaction(PrivateKeyAccount account, ByteBuffer buffer, String endpoint, Object... items) {
         byte[] bytes = toBytes(buffer);
         this.id = hash(bytes); // base58_encode(blake2b256(bytes))
-        this.signature = sign(account, bytes); // base58_encode(sign())
+        this.signature = sign(account, bytes); // base58_encode(sign(randomBytes(64), privkey, message))
 
         System.out.println(
                         "Tx constructor:\n" +
@@ -81,17 +81,19 @@ public class Transaction {
             Field providerField = Curve25519.class.getDeclaredField("provider");
             providerField.setAccessible(true);
             OpportunisticCurve25519Provider provider = (OpportunisticCurve25519Provider) providerField.get(cipher);
-            int[] randomIntArray = new int[] {64, 25, 196, 67, 26, 66, 35, 88, 53, 188, 8, 63, 113, 126, 31, 86, 171, 157, 191, 214, 52, 143, 63, 122, 165, 123, 194, 156, 225, 103, 87, 96, 79, 107, 185, 79, 45, 250, 141, 192, 120, 121, 20, 51, 47, 162, 221, 228, 84, 65, 72, 115, 183, 60, 13, 222, 232, 81, 254, 44, 109, 231, 121, 228};
+            int[] randomIntArray = new int[] {64, 25, 196, 67, 26, 66, 35, 88, 53, 188, 8, 63, 113, 126, 31,
+                    86, 171, 157, 191, 214, 52, 143, 63, 122, 165, 123, 194, 156, 225, 103, 87, 96, 79, 107, 185, 79, 45, 250, 141, 192, 120, 121, 20, 51, 47, 162, 221, 228, 84, 65, 72, 115, 183, 60, 13, 222, 232, 81, 254, 44, 109, 231, 121, 228};
 
             byte[] random = Util.arrayOfBytes(randomIntArray); // provider.getRandom(64);
             byte[] signature = provider.calculateSignature(random, account.getPrivateKey(), bytes);
             System.out.println(
+                    "---Mocked signature---" + "\n" +
                     "provider: " + provider + "\n" +
                     "calculateSignature:\n" +
                     "random: " + Util.listOfUByte(random) + "\n" +
                     "private key: " + Util.hexString(account.getPrivateKey()) + "\n" +
                     "message: " + Util.hexString(bytes) + "\n" +
-                    "signature: " + Util.hexString(signature) + "\n");
+                    "signature: " + Util.hexString(signature) + " len: " + signature.length +  "\n");
 
 
         } catch (NoSuchFieldException e) {
@@ -102,8 +104,8 @@ public class Transaction {
 
         System.out.println(
                 "Tx singing:\n" +
-                        "private key: " + Util.hexString(account.getPrivateKey()) + "\n" +
-                        "signature hex bytes: " + Util.hexString(bytes) + "\n");
+                "private key: " + Util.hexString(account.getPrivateKey()) + "\n" +
+                "signature hex bytes: " + Util.hexString(bytes) + "\n");
 
         return Base58.encode(cipher.calculateSignature(account.getPrivateKey(), bytes));
     }
@@ -202,6 +204,8 @@ public class Transaction {
 
         putAsset(buf, assetId);
         putAsset(buf, feeAssetId);
+        System.out.println("assets");
+        Util.printHexString(buf.array());
         buf
                 .putLong(timestamp)
                 .putLong(amount)
@@ -237,8 +241,14 @@ public class Transaction {
         }
         long timestamp = System.currentTimeMillis();
         ByteBuffer buf = ByteBuffer.allocate(MIN_BUFFER_SIZE);
-        buf.put(BURN).put(account.getPublicKey()).put(Base58.decode(assetId))
-                .putLong(amount).putLong(fee).putLong(timestamp);
+        buf
+                .put(BURN)
+                .put(account.getPublicKey())
+                .put(Base58.decode(assetId))
+                .putLong(amount)
+                .putLong(fee)
+                .putLong(timestamp);
+
         return new Transaction(account, buf,"/assets/broadcast/burn",
                 "senderPublicKey", Base58.encode(account.getPublicKey()),
                 "assetId", assetId,

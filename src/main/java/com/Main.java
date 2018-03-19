@@ -32,6 +32,8 @@ public class Main {
             Asset.WAVES,
             "");
 
+
+
     System.out.println(
                     "Account\n" + accountType +
                     "Sender\n" +
@@ -51,6 +53,8 @@ public class Main {
                     Util.hexString(recipientPublicKey) + "\n" +
                     "Address\n" +
                     recipientAddress);
+
+    System.out.println("".getBytes().length);
 
 
     /*
